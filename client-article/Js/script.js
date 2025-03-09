@@ -1,3 +1,6 @@
+// Set API Base URL 
+const API_BASE_URL = "http://192.168.1.103/FAQ-DEMO/server-article/api/v1/";
+
 document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
     if (window.location.pathname.includes("home.html")) {
@@ -26,44 +29,43 @@ function setupEventListeners() {
     });
 }
 
+// API Helpers
 function sendPost(url, data) {
-    return axios.post(url, data);
+    return axios.post(API_BASE_URL + url, data);
 }
 
 function sendGet(url) {
-    return axios.get(url);
+    return axios.get(API_BASE_URL + url);
 }
 
-//  Fetch FAQs - Corrected Function
+// Fetch FAQs
 function fetchAndRenderFAQs() {
-    
-        const url = "http://localhost/FAQ-DEMO/server-article/api/v1/faq.php";
-        console.log("🔍 Fetching FAQs from:", url); 
-    
-        sendGet(url)
+    const url = "faq.php";
+    console.log("🔍 Fetching FAQs from:", API_BASE_URL + url);
+
+    sendGet(url)
         .then(response => {
             console.log(" API Response:", response.data);
-    
+
             if (!Array.isArray(response.data)) {
                 console.error("API returned unexpected data format:", response.data);
                 return;
             }
-    
-            
+
             const container = document.getElementById('cardsContainer');
             if (!container) {
                 console.error("⚠️ `cardsContainer` not found in DOM! FAQs cannot be displayed.");
                 return;
             }
-    
-            renderFAQs(response.data); 
+
+            renderFAQs(response.data);
         })
         .catch(error => {
             console.error("Error fetching FAQs:", error);
         });
-    }
+}
 
-//  Render FAQs - Now Defined Outside fetchAndRenderFAQs
+// Render FAQs
 function renderFAQs(faqs) {
     console.log("Rendering FAQs:", faqs);
 
@@ -78,7 +80,7 @@ function renderFAQs(faqs) {
         return;
     }
 
-    container.innerHTML = ''; 
+    container.innerHTML = '';
 
     faqs.forEach(faq => {
         const faqElem = document.createElement('div');
@@ -90,12 +92,12 @@ function renderFAQs(faqs) {
     console.log("FAQs successfully rendered!");
 }
 
-//  Filter FAQs
+// Filter FAQs
 function filterQuestions(e) {
     const query = e.target.value.toLowerCase();
-    sendGet("http://localhost/FAQ-DEMO/server-article/api/v1/faq.php")
+    sendGet("faq.php")
         .then(response => {
-            const filteredFAQs = response.data.filter(faq => 
+            const filteredFAQs = response.data.filter(faq =>
                 faq.question.toLowerCase().includes(query) || faq.answer.toLowerCase().includes(query)
             );
             renderFAQs(filteredFAQs);
@@ -103,9 +105,9 @@ function filterQuestions(e) {
         .catch(() => console.error("Error filtering FAQs"));
 }
 
-//  Submit FAQ 
+// Submit FAQ
 function contributeQuestion(e) {
-    e.preventDefault(); //  Prevent page reload
+    e.preventDefault();
 
     const title = document.getElementById("questionTitle").value;
     const body = document.getElementById("questionBody").value;
@@ -117,81 +119,63 @@ function contributeQuestion(e) {
 
     console.log("Submitting FAQ:", { question: title, answer: body });
 
-    axios.post("http://localhost/FAQ-DEMO/server-article/api/v1/faq.php", { 
-        question: title, 
-        answer: body
-    })
-    .then(response => {
-        console.log("FAQ Submission Successful:", response.data);
-        alert("FAQ added successfully! Redirecting to home..."); //  Inform user
+    sendPost("faq.php", { question: title, answer: body })
+        .then(response => {
+            console.log("FAQ Submission Successful:", response.data);
+            alert("FAQ added successfully! Redirecting to home...");
 
-        // Redirect to `home.html` after submission
-        window.location.href = "home.html"; 
-    })
-    .catch(error => {
-        console.error("FAQ Submission Failed:", error.response ? error.response.data : error);
-        alert("Submission failed. Try again.");
-    });
+            window.location.href = "home.html";
+        })
+        .catch(error => {
+            console.error("FAQ Submission Failed:", error.response ? error.response.data : error);
+            alert("Submission failed. Try again.");
+        });
 }
 
-// Signup Request 
+// Signup Request
 function signUpUser(e) {
-    e.preventDefault(); 
+    e.preventDefault();
 
     const newUsername = document.getElementById("newUsername").value;
     const email = document.getElementById("email").value;
     const newPassword = document.getElementById("newPassword").value;
 
-    console.log("Submitting signup data:", { 
-        action: "signup", 
-        username: newUsername, 
-        email: email,
-        password: newPassword 
-    });
+    console.log("Submitting signup data:", { action: "signup", username: newUsername, email, password: newPassword });
 
-    axios.post("http://localhost/FAQ-DEMO/server-article/api/v1/signup.php", {
-        action: "signup",  
-        username: newUsername, 
-        email: email,
-        password: newPassword  
-    })
-    .then(response => {
-        console.log("Signup successful:", response.data);
-        localStorage.setItem("loggedIn", "true"); 
-        window.location.href = "home.html"; 
-    })
-    .catch(error => {
-        console.error("Signup failed:", error.response ? error.response.data : error);
-        alert("Signup failed. Try again.");
-    });
+    sendPost("signup.php", { action: "signup", username: newUsername, email, password: newPassword })
+        .then(response => {
+            console.log("Signup successful:", response.data);
+            localStorage.setItem("loggedIn", "true");
+            window.location.href = "home.html";
+        })
+        .catch(error => {
+            console.error("Signup failed:", error.response ? error.response.data : error);
+            alert("Signup failed. Try again.");
+        });
 }
 
-//  Login Request 
+// Login Request
 function loginUser(e) {
     e.preventDefault();
-    
+
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
 
     console.log("🔍 Sending login request:", { username, password });
 
-    axios.post("http://localhost/FAQ-DEMO/server-article/api/v1/login.php", {
-        action: "login",
-        username: username,
-        password: password
-    })
-    .then(response => {
-        console.log(" Login success:", response.data);
+    sendPost("login.php", { action: "login", username, password })
+        .then(response => {
+            console.log(" Login success:", response.data);
 
-        if (response.data.token) {
-            localStorage.setItem("authToken", response.data.token);
-            window.location.href = "home.html";
-        } else {
-            alert("Login failed. Check credentials.");
-        }
-    })
-    .catch(error => {
-        console.error("Login error:", error);
-        alert("Login failed. Try again.");
-    });
+            if (response.data.token) {
+                localStorage.setItem("authToken", response.data.token);
+                window.location.href = "home.html";
+            } else {
+                alert("Login failed. Check credentials.");
+            }
+        })
+        .catch(error => {
+            console.error("Login error:", error);
+            alert("Login failed. Try again.");
+        });
 }
