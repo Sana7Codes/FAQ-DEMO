@@ -1,0 +1,20 @@
+# Ignore system & editor files
+.DS_Store
+.idea/
+.vscode/
+
+# Ignore PHP environment files
+.env
+vendor/
+
+# Ignore logs and temp files
+*.log
+
+# Ignore XAMPP logs & cache
+xampp/
+logs/
+
+
+# Ignore IDE settings
+.idea/
+.vscode/
